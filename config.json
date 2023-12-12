@@ -1,0 +1,20 @@
+{
+    "nodes": [
+        {
+            "name": "Node 1",
+            "apiKey": "adwdawad",
+            "schedule": {
+                "cron": "0 0 * * *",
+                "runningTime": "PT6H"
+            }
+        },
+        {
+            "name": "Node 2",
+            "apiKey": "adwdawad",
+            "schedule": {
+                "cron": "0 7 * * *",
+                "runningTime": "PT6H"
+            }
+        }
+    ]
+}
