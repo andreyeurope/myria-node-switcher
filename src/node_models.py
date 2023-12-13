@@ -1,35 +1,35 @@
 from dataclasses import dataclass
 from dataclasses_json import dataclass_json, LetterCase
-import croniter
-import datetime
-import isodate
+from croniter import croniter
+from isodate import parse_duration
+from datetime import datetime, timedelta
+import logging
 
 @dataclass_json(letter_case=LetterCase.CAMEL)
 @dataclass
 class NodeSchedule:
-    """Class for keeping track of an item in inventory."""
     cron: str
     runningTime: str
-
-    def get_croniter(self, currentDate) -> croniter:
-        return croniter.croniter(self.cron, currentDate)
     
-    def get_duration(self) -> datetime.timedelta:
-        return isodate.parse_duration(str)
+    def get_duration(self) -> timedelta:
+        return parse_duration(self.runningTime)
 
-    def should_be_running(self, currentDate: datetime.datetime) -> bool:
+    def should_be_running(self, currentDate: datetime) -> bool:
         duration = self.get_duration()
-        croniter = self.get_croniter(currentDate)
-        prevRunStart = croniter.get_prev(currentDate)
+        iter = croniter(self.cron, currentDate)
+        prevRunStart = iter.get_prev(datetime)
         prevRunEnd = prevRunStart + duration
-        nextRunStart = croniter.get_next(currentDate)
+        nextRunStart = iter.get_next(datetime)
         nextRunEnd = nextRunStart + duration
-        return (currentDate >= nextRunStart and currentDate <= nextRunEnd) or (currentDate >= prevRunStart and currentDate <= prevRunEnd)
+
+        return nextRunStart <= currentDate <= nextRunEnd or prevRunStart <= currentDate <= prevRunEnd
 
 @dataclass_json(letter_case=LetterCase.CAMEL)
 @dataclass
 class Node:
-    """Class for keeping track of an item in inventory."""
     name: str
     apiKey: str
     schedule: NodeSchedule
+
+    def should_be_running(self, currentDate: datetime) -> bool:
+        return self.schedule.should_be_running(currentDate)
